@@ -21,6 +21,9 @@ public class OldBinaryGPSData extends GPSData {
 	
 	public void read(Payload p) 
 	{
+	
+		Print.logInfo("Hex. GPS data: " + p.toString());
+	
 		int year;
 		int month;
 		int day;
@@ -33,13 +36,25 @@ public class OldBinaryGPSData extends GPSData {
         tempBytes = p.readBytes(1, "");
         year = (int) (tempBytes[0] & 0x7F);
         gpsValid = (int) ((tempBytes[0] & 0x80) >> 7); 
+		
+		Print.logInfo("Hex: " + Integer.toHexString(year) + " Year: " + year);
+		Print.logInfo("Hex: " + Integer.toHexString(gpsValid) + " Valid: " + gpsValid);
         
         /* Extract month, day, hour, minute, second */
         month = p.readUInt(1, 0);
+		Print.logInfo("Hex: " + Integer.toHexString(month) + " Month: " + month);
+		
         day = p.readUInt(1, 0);
+		Print.logInfo("Hex: " + Integer.toHexString(day) + " Day: " + day);
+		
         hour = p.readUInt(1, 0);
+		Print.logInfo("Hex: " + Integer.toHexString(hour) + " Hour: " + hour);
+		
         minute = p.readUInt(1, 0);
+		Print.logInfo("Hex: " + Integer.toHexString(minute) + " Minute: " + minute);
+		
         second = p.readUInt(1, 0);
+		Print.logInfo("Hex: " + Integer.toHexString(second) + " Second: " + second);
         
         /* Generate timestamp */
         year += 2000;
@@ -48,9 +63,11 @@ public class OldBinaryGPSData extends GPSData {
         long offsetToUTC = TimeZone.getTimeZone("Europe/Belgrade").getOffset(timeInMillis);
         dt.setTimeMillis(timeInMillis + offsetToUTC);
         timestamp = dt.getTimeSec();
+		
         
         /* Extract latitude */
         
+		
         tempBytes = p.readBytes(4, "");
         int h = (int) ((tempBytes[0] & 0x80) >> 7);
         char hemisphere = 'N';
@@ -61,9 +78,17 @@ public class OldBinaryGPSData extends GPSData {
         int latMinutesLSB = (int) (tempBytes[1] & 0xFF);
         int latMinutesMSBDecimalPart = (int) (tempBytes[2] & 0xFF);
         int latMinutesLSBDecimalPart = (int) (tempBytes[3] & 0xFF);
-        
         latitude = calculateCoordinate(hemisphere, latMinutesMSB, latMinutesLSB, latMinutesMSBDecimalPart, latMinutesLSBDecimalPart);
-        
+		
+		Print.logInfo("Latitude");
+		Print.logInfo("Hex: " + Integer.toHexString(h) + " Hemisphere: " + hemisphere);
+        Print.logInfo("Hex: " + Integer.toHexString(latMinutesMSB) + " Lat. minutes. MSB: " + latMinutesMSB);
+		Print.logInfo("Hex: " + Integer.toHexString(latMinutesLSB) + " Lat. minutes. LSB: " + latMinutesLSB);
+		Print.logInfo("Hex: " + Integer.toHexString(latMinutesMSBDecimalPart) + " Lat. minutes. dec. MSB: " + latMinutesMSBDecimalPart);
+		Print.logInfo("Hex: " + Integer.toHexString(latMinutesLSBDecimalPart) + " Lat. minutes. dec. LSB: " + latMinutesLSBDecimalPart);
+		Print.logInfo("Latitude min.: " + (latMinutesMSB * 256 + latMinutesLSB) + "." + (latMinutesMSBDecimalPart * 256 + latMinutesLSBDecimalPart));
+		Print.logInfo("Latitude: " + latitude);
+		
         /* Extract longitude */
         
         tempBytes = p.readBytes(4, "");
@@ -79,6 +104,15 @@ public class OldBinaryGPSData extends GPSData {
         
         longitude = calculateCoordinate(hemisphere, lonMinutesMSB, lonMinutesLSB, lonMinutesMSBDecimalPart, lonMinutesLSBDecimalPart);
         
+		Print.logInfo("Longitude");
+		Print.logInfo("Hex: " + Integer.toHexString(h) + " Hemisphere: " + hemisphere);
+        Print.logInfo("Hex: " + Integer.toHexString(lonMinutesMSB) + " Lon. minutes. MSB: " + lonMinutesMSB);
+		Print.logInfo("Hex: " + Integer.toHexString(lonMinutesLSB) + " Lon. minutes. LSB: " + lonMinutesLSB);
+		Print.logInfo("Hex: " + Integer.toHexString(lonMinutesMSBDecimalPart) + " Lon. minutes. dec. MSB: " + lonMinutesMSBDecimalPart);
+		Print.logInfo("Hex: " + Integer.toHexString(lonMinutesLSBDecimalPart) + " Lon. minutes. dec. LSB: " + lonMinutesLSBDecimalPart);
+		Print.logInfo("Longitude min.: " + (lonMinutesMSB * 256 + lonMinutesLSB) + "." + (lonMinutesMSBDecimalPart * 256 + lonMinutesLSBDecimalPart));
+		Print.logInfo("Longitude: " + longitude);
+		
         /* Extract speed and heading */
         int s = p.readInt(2, 0);
         speed = s * KILOMETERS_PER_KNOT;
